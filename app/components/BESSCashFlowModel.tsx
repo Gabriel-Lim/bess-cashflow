@@ -85,7 +85,7 @@ const BESSCashFlowModel: React.FC = () => {
   const [discountRate, setDiscountRate] = useState<number>(0.08);
   const [debtRatio, setDebtRatio] = useState<number>(0);
   const [interestRate, setInterestRate] = useState<number>(0.08);
-  const [loanTenor, setLoanTenor] = useState<number>(7);
+  const [loanTenor, setLoanTenor] = useState<number>(12);
 
   // Optional aggregator fee
   const [includeAggregatorFee, setIncludeAggregatorFee] = useState<boolean>(false);
