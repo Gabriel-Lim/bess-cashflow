@@ -62,6 +62,12 @@ const MARKET_CONTEXT = {
   }
 } as const;
 
+const REVENUE_PER_KW = {
+  downside: 245.57,
+  base: 359.77,
+  upside: 615.47,
+} as const;
+
 // ----------------------------------------------------------------------------------
 //  Types ---------------------------------------------------------------------------
 // ----------------------------------------------------------------------------------
@@ -109,11 +115,6 @@ const BESSCashFlowModel: React.FC = () => {
   const POWER_TO_ENERGY = 0.5; // 2‑hour battery
   const DISCHARGE_EFF = 0.96; // 4 % loss
 
-  const REVENUE_PER_KW = {
-    downside: 245.57,
-    base: 359.77,
-    upside: 615.47
-  } as const;
 
   /*───────────────────── Core Calculations ─────────────────────*/
   const calc = useMemo(() => {
@@ -205,8 +206,7 @@ const BESSCashFlowModel: React.FC = () => {
     interestRate,
     loanTenor,
     includeAggregatorFee,
-    aggregatorFeePercent,
-    REVENUE_PER_KW
+    aggregatorFeePercent
   ]);
 
   /*──────────────── Sensitivity Analysis (Capex) ───────────────*/
@@ -219,7 +219,6 @@ const BESSCashFlowModel: React.FC = () => {
       const totalCapex = bessSize * cpx;
       const annualOm = totalCapex * OM_COST_RATE;
       const grossRevenue = powerKw * REVENUE_PER_KW[revenueScenario] * DISCHARGE_EFF;
-      const feeAnnual = grossRevenue * feeRate;
 
       const debt = totalCapex * debtRatio;
       const equity = totalCapex - debt;
@@ -272,8 +271,7 @@ const BESSCashFlowModel: React.FC = () => {
     interestRate,
     loanTenor,
     includeAggregatorFee,
-    aggregatorFeePercent,
-    REVENUE_PER_KW
+    aggregatorFeePercent
   ]);
 
   /*─────────────────── Utility: IRR ───────────────────*/
