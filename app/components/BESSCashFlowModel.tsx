@@ -74,6 +74,17 @@ interface SensitivityPoint {
   irr: number; // percentage
 }
 
+interface CashFlowRow {
+  year: number;
+  revenue: number;
+  aggregatorFee: number;
+  opex: number;
+  ebitda: number;
+  debtService: number;
+  netCashFlow: number;
+  cumulativeCashFlow: number;
+}
+
 // ----------------------------------------------------------------------------------
 //  Component -----------------------------------------------------------------------
 // ----------------------------------------------------------------------------------
@@ -126,7 +137,7 @@ const BESSCashFlowModel: React.FC = () => {
     }
 
     // Cash‑flow projection
-    const flows: any[] = [];
+    const flows: CashFlowRow[] = [];
     let cumulative = 0;
     let npv = -equity;
 
@@ -194,7 +205,8 @@ const BESSCashFlowModel: React.FC = () => {
     interestRate,
     loanTenor,
     includeAggregatorFee,
-    aggregatorFeePercent
+    aggregatorFeePercent,
+    REVENUE_PER_KW
   ]);
 
   /*──────────────── Sensitivity Analysis (Capex) ───────────────*/
@@ -208,7 +220,6 @@ const BESSCashFlowModel: React.FC = () => {
       const annualOm = totalCapex * OM_COST_RATE;
       const grossRevenue = powerKw * REVENUE_PER_KW[revenueScenario] * DISCHARGE_EFF;
       const feeAnnual = grossRevenue * feeRate;
-      const netRevenue = grossRevenue - feeAnnual;
 
       const debt = totalCapex * debtRatio;
       const equity = totalCapex - debt;
@@ -252,8 +263,8 @@ const BESSCashFlowModel: React.FC = () => {
         }
       }
 
-      return { capex: cpx, payback, irr };
-    });
+    return { capex: cpx, payback, irr };
+  });
   }, [
     bessSize,
     revenueScenario,
@@ -261,7 +272,8 @@ const BESSCashFlowModel: React.FC = () => {
     interestRate,
     loanTenor,
     includeAggregatorFee,
-    aggregatorFeePercent
+    aggregatorFeePercent,
+    REVENUE_PER_KW
   ]);
 
   /*─────────────────── Utility: IRR ───────────────────*/
@@ -344,6 +356,11 @@ const BESSCashFlowModel: React.FC = () => {
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Interest Rate (%)</label>
             <input type="number" value={interestRate * 100} onChange={e => setInterestRate(+e.target.value / 100)} className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500" min={0} max={15} step={0.25} />
+          </div>
+          {/* Loan tenor */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Loan Tenor (yrs)</label>
+            <input type="number" value={loanTenor} onChange={e => setLoanTenor(+e.target.value)} className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500" min={1} max={PROJECT_LIFE} step={1} />
           </div>
           {/* Aggregator fee checkbox */}
           <div className="flex items-center gap-2">
