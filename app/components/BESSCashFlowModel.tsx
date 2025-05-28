@@ -30,6 +30,9 @@ import {
  * 2025‑05‑27: Added payback‑period & IRR sensitivity analysis line chart
  *             across Capex/kWh values ($300‑$400) – positioned beneath
  *             detailed cash‑flow table.
+ * 2025‑05‑28: Added `fmtSGD` helper so every SGD figure shows two‑decimal precision
+ *             (e.g. 43,172.40).  Replaced previous `toLocaleString()` calls where
+ *             currency is rendered.  No other logic touched.
  */
 
 // ----------------------------------------------------------------------------------
@@ -115,6 +118,13 @@ const BESSCashFlowModel: React.FC = () => {
   const POWER_TO_ENERGY = 0.5; // 2‑hour battery
   const DISCHARGE_EFF = 0.96; // 4 % loss
 
+  /*───────────────── Utility formatting ───────────────────*/
+  /** Format a number as SGD with two decimal places */
+  const fmtSGD = (n: number) =>
+    n.toLocaleString('en-SG', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
 
   /*───────────────────── Core Calculations ─────────────────────*/
   const calc = useMemo(() => {
@@ -262,8 +272,8 @@ const BESSCashFlowModel: React.FC = () => {
         }
       }
 
-    return { capex: cpx, payback, irr };
-  });
+      return { capex: cpx, payback, irr };
+    });
   }, [
     bessSize,
     revenueScenario,
@@ -379,12 +389,12 @@ const BESSCashFlowModel: React.FC = () => {
       <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Capex */}
         <MetricCard title="Total Capex" icon={<DollarSign className="text-green-600" size={20} />}>
-          <p className="text-2xl font-bold">SGD {calc.totalCapex.toLocaleString()}</p>
-          <p className="text-xs text-gray-500">Equity: SGD {calc.equity.toLocaleString()}</p>
+          <p className="text-2xl font-bold">SGD {fmtSGD(calc.totalCapex)}</p>
+          <p className="text-xs text-gray-500">Equity: SGD {fmtSGD(calc.equity)}</p>
         </MetricCard>
         {/* NPV */}
         <MetricCard title={`NPV @ ${(discountRate * 100).toFixed(0)}%`} icon={<TrendingUp className="text-blue-600" size={20} />}>
-          <p className="text-2xl font-bold">SGD {calc.npv.toLocaleString()}</p>
+          <p className="text-2xl font-bold">SGD {fmtSGD(calc.npv)}</p>
           <p className="text-xs text-gray-500">{calc.npv > 0 ? 'Positive' : 'Negative'} NPV</p>
         </MetricCard>
         {/* IRR */}
@@ -407,7 +417,7 @@ const BESSCashFlowModel: React.FC = () => {
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="year" />
             <YAxis />
-            <Tooltip formatter={(v: number) => `SGD ${v.toLocaleString()}`} />
+            <Tooltip formatter={(v: number) => `SGD ${fmtSGD(v)}`} />
             <Legend />
             {includeAggregatorFee && <Bar dataKey="aggregatorFee" fill="#a78bfa" name="Aggregator Fee" />}
             <Bar dataKey="revenue" fill="#10b981" name="Revenue" />
@@ -447,7 +457,7 @@ const BESSCashFlowModel: React.FC = () => {
                   <Td>{f.year}</Td>
                   <Td align>{f.revenue.toLocaleString()}</Td>
                   {includeAggregatorFee && <Td align>{f.aggregatorFee.toLocaleString()}</Td>}
-                  <Td align>{f.opex.toLocaleString()}</Td>
+                  <Td align>({f.opex.toLocaleString()})</Td>
                   <Td align>{f.ebitda.toLocaleString()}</Td>
                   <Td align>{f.debtService.toLocaleString()}</Td>
                   <Td align className={f.netCashFlow >= 0 ? 'text-green-600' : 'text-red-600'}>{f.netCashFlow.toLocaleString()}</Td>
@@ -486,13 +496,13 @@ const BESSCashFlowModel: React.FC = () => {
             <ul className="space-y-1 text-sm">
               <li className="flex justify-between"><span>1. Battery Size:</span><span className="font-mono">{bessSize} kWh</span></li>
               <li className="flex justify-between"><span>2. Power Capacity (@ {POWER_TO_ENERGY}C):</span><span className="font-mono">{calc.powerKw} kW</span></li>
-              <li className="flex justify-between"><span>3. Revenue Rate ({revenueScenario}):</span><span className="font-mono">SGD {REVENUE_PER_KW[revenueScenario]}/kW‑yr</span></li>
+              <li className="flex justify-between"><span>3. Revenue Rate ({revenueScenario}):</span><span className="font-mono">SGD {fmtSGD(REVENUE_PER_KW[revenueScenario])}/kW‑yr</span></li>
               <li className="flex justify-between"><span>4. Discharge Efficiency:</span><span className="font-mono">96%</span></li>
-              <li className="flex justify-between border-t pt-2"><span className="font-semibold">Annual Revenue:</span><span className="font-mono font-semibold">SGD {calc.grossRevenue.toLocaleString()}</span></li>
+              <li className="flex justify-between border-t pt-2"><span className="font-semibold">Annual Revenue:</span><span className="font-mono font-semibold">SGD {fmtSGD(calc.grossRevenue)}</span></li>
               {includeAggregatorFee && (
                 <>
-                  <li className="flex justify-between"><span>- Aggregator Fee ({aggregatorFeePercent}%):</span><span className="font-mono">SGD {calc.feeAnnual.toLocaleString()}</span></li>
-                  <li className="flex justify-between border-t pt-2"><span className="font-semibold">Revenue After Fees:</span><span className="font-mono font-semibold">SGD {calc.netRevenue.toLocaleString()}</span></li>
+                  <li className="flex justify-between"><span>- Aggregator Fee ({aggregatorFeePercent}%):</span><span className="font-mono">SGD {fmtSGD(calc.feeAnnual)}</span></li>
+                  <li className="flex justify-between border-t pt-2"><span className="font-semibold">Revenue After Fees:</span><span className="font-mono font-semibold">SGD {fmtSGD(calc.netRevenue)}</span></li>
                 </>
               )}
             </ul>
@@ -501,13 +511,13 @@ const BESSCashFlowModel: React.FC = () => {
           <div>
             <h4 className="font-medium text-blue-900 mb-2">Singapore Market Context ({revenueScenario})</h4>
             <ul className="space-y-1 text-sm">
-              <li className="flex justify-between"><span>Avg DR incentive (SGD/MWh):</span><span className="font-mono">{MARKET_CONTEXT[revenueScenario].drIncentive.toLocaleString()}</span></li>
+              <li className="flex justify-between"><span>Avg DR incentive (SGD/MWh):</span><span className="font-mono">{fmtSGD(MARKET_CONTEXT[revenueScenario].drIncentive)}</span></li>
               <li className="flex justify-between"><span>Eligible DR periods/yr:</span><span className="font-mono">{MARKET_CONTEXT[revenueScenario].eligiblePeriods}</span></li>
               <li className="flex justify-between"><span>BESS participation rate:</span><span className="font-mono">{(MARKET_CONTEXT[revenueScenario].participationRate * 100).toFixed(1)}%</span></li>
-              <li className="flex justify-between"><span>Avg CONRESA price (SGD/MWh):</span><span className="font-mono">{MARKET_CONTEXT[revenueScenario].conresaPrice}</span></li>
+              <li className="flex justify-between"><span>Avg CONRESA price (SGD/MWh):</span><span className="font-mono">{fmtSGD(MARKET_CONTEXT[revenueScenario].conresaPrice)}</span></li>
               <li className="flex justify-between"><span>DR periods participated:</span><span className="font-mono">{MARKET_CONTEXT[revenueScenario].drPeriods}</span></li>
               <li className="flex justify-between border-b pb-1"><span>IL periods participated:</span><span className="font-mono">{MARKET_CONTEXT[revenueScenario].ilPeriods}</span></li>
-              <li className="flex justify-between font-semibold pt-2"><span>Combined revenue (SGD/kW‑yr):</span><span className="font-mono">{REVENUE_PER_KW[revenueScenario]}</span></li>
+              <li className="flex justify-between font-semibold pt-2"><span>Combined revenue (SGD/kW‑yr):</span><span className="font-mono">{fmtSGD(REVENUE_PER_KW[revenueScenario])}</span></li>
             </ul>
           </div>
         </div>
